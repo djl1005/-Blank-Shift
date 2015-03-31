@@ -29,8 +29,8 @@ var tileArray = [];				// array with all game tiles
 	for(var i=0;i<fieldSize;i++){
 		tileArray[i]=[];
 		for( var j=0;j<fieldSize;j++){
-			var randomTile = Math.floor(Math.random()*tileTypes)
-			var theTile= app.game.add.sprite(j*tileSize+tileSize/2,i*tileSize+tileSize/2,"tiles");
+			var randomTile = Math.floor(j);
+			var theTile= app.game.add.sprite((fieldSize - j) *tileSize+tileSize/2,(fieldSize - i)*tileSize+tileSize/2,"tiles");
 			theTile.frame = randomTile;
 			theTile.anchor.setTo(0.5,0.5);
 			tileArray[i][j]=theTile;
