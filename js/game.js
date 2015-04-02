@@ -7,13 +7,15 @@ window.onload = function () {
 
     app.game = new Phaser.Game(300, 300, Phaser.CANVAS, "", { preload: onPreload, create: onCreate, update: onUpdate });
 
-    app.startX;
-    app.startY;
-    app.endX;
-    app.endY;
-    app.dragging;
-    app.movingRow;
-    app.movingCol;
+    app.startX = 0;
+    app.startY = 0;
+    app.endX = 0;
+    app.endY = 0;
+    app.dragging = false;
+    app.movingRow = 0;
+    app.movingCol = 0;
+    app.endRow = 0;
+    app.endCol =0;
 
     var tileSize = 50;				// tile size, in pixels
     var fieldSize = 6;     			// number of tiles per row/column
@@ -166,6 +168,35 @@ window.onload = function () {
             //Copy the row
             moveTiles = tileArray[app.movingRow].slice(0);
 
+            app.endcol = Math.floor((app.game.world.width - app.endX) / tileSize);
+
+            var dist = app.endcol - app.movingCol;
+
+            for ( var i = 0;  i < fieldSize; i++)
+            {
+
+                var index = i + dist;
+
+                if(index >= fieldSize )
+                {
+                    index = index - fieldSize;
+                }
+                if (index < 0 ) {
+                    index = index + fieldSize;
+                }
+
+                console.log(index);
+
+
+                tileArray[app.movingRow][index] = moveTiles[i];
+                tileArray[app.movingRow][index].x = (((fieldSize - 1)) - index) * tileSize + tileSize / 2;
+
+
+            }
+
+            console.log(tileArray[app.movingRow]);
+
+            /*
             //Left
             if (xDist > 0) {
                 for (var i = 0; i < fieldSize; i++) {
@@ -192,7 +223,8 @@ window.onload = function () {
                     }
                 }
             }
-        }
+            */
+        } // end horizontal
 
         //A Vertical swipe takes place when yDist is at least twice xDist and at least 10 pixels
         if (Math.abs(yDist) > Math.abs(xDist) * 2 && Math.abs(yDist) > 10) {
