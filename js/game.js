@@ -7,15 +7,19 @@ window.onload = function () {
 
     app.game = new Phaser.Game(300, 300, Phaser.CANVAS, "", { preload: onPreload, create: onCreate, update: onUpdate });
 
-    app.startX = 0;
-    app.startY = 0;
-    app.endX = 0;
-    app.endY = 0;
+    app.oldX = 0;
+    app.oldY = 0;
+    app.currentX = 0;
+    app.currentY = 0;
     app.dragging = false;
-    app.movingRow = 0;
-    app.movingCol = 0;
-    app.endRow = 0;
-    app.endCol =0;
+    app.isHorizontal = false;
+    app.isVertical = false;
+    app.oldRow = 0;
+    app.oldCol = 0;
+    app.currentRow = 0;
+    app.currentCol = 0;
+
+
 
     var tileSize = 50;				// tile size, in pixels
     var fieldSize = 6;     			// number of tiles per row/column
@@ -27,7 +31,7 @@ window.onload = function () {
     var movingTileGroup;               // group containing the moving tile
 
     function onPreload() {
-        app.game.load.spritesheet("tiles", "media/tiles.png", tileSize, tileSize);
+        app.game.load.spritesheet("tiles", "media/tiles.png", 50, 50);
     }
 
     function onCreate() {
@@ -56,36 +60,84 @@ window.onload = function () {
         }
     }
 
-    function pickTile() {
-        // save input coordinates
-        app.startX = app.game.input.worldX;
-        app.startY = app.game.input.worldY;
-        // retrieve picked row and column 
-
-        console.log(app.game.world.height - app.startY);
-
-        app.movingRow = Math.floor((app.game.world.height - app.startY) / tileSize);
-        app.movingCol = Math.floor((app.game.world.width - app.startX) / tileSize);
-        // move the tile to the upper group, so it will surely be at top of the stage
-        movingTileGroup.add(tileArray[app.movingRow][app.movingCol]);
-        // zoom the tile
-        tileArray[app.movingRow][app.movingCol].width = tileSize * pickedZoom;
-        tileArray[app.movingRow][app.movingCol].height = tileSize * pickedZoom;
-        // now dragging is allowed
-        app.dragging = true;
-        // update listeners
-        app.game.input.onUp.add(startSwipe, this);
-        //game.input.onUp.add(releaseTile, this);
-    }
 
     function onUpdate() {
         // if we are dragging a tile
         if (app.dragging) {
-            // check x and y distance from starting to current input location
-            // move the tile
-            tileArray[app.movingRow][app.movingCol].x = app.game.input.worldX;
-            tileArray[app.movingRow][app.movingCol].y = app.game.input.worldY;
-            doMatchCheck();
+            //Save end coordinates
+            app.currentX = app.game.input.worldX;
+            app.currentY = app.game.input.worldY;
+
+            //Determine distance travelled in the X and Y
+            var xDist = app.oldX - app.currentX;
+            var yDist = app.oldY - app.currentY;
+            var moveTiles = [];
+
+            //A Horizontal swipe takes place when xDist is at least twice yDist and at least 10 world units
+            if (Math.abs(xDist) > Math.abs(yDist) * 2 && Math.abs(xDist) > 10 && !app.isVertical) {
+                //Copy the row
+                moveTiles = tileArray[app.oldRow].slice(0);
+
+                app.isHorizontal = true; 
+
+                app.currentCol = Math.floor((app.game.world.width - app.currentX) / tileSize);
+
+                var dist = app.currentCol - app.oldCol;
+
+                for (var i = 0; i < fieldSize; i++) {
+
+                    var index = i + dist;
+
+                    if (index >= fieldSize) {
+                        index = index - fieldSize;
+                    }
+                    if (index < 0) {
+                        index = index + fieldSize;
+                    }
+
+                    tileArray[app.oldRow][index] = moveTiles[i];
+                    tileArray[app.oldRow][index].x = (((fieldSize - 1)) - index) * tileSize + tileSize / 2;
+
+                }
+                app.oldCol = app.currentCol;
+                app.oldX = app.currentX;
+
+            } // end horizontal
+
+            //A Vertical swipe takes place when yDist is at least twice xDist and at least 10 world units
+            if (Math.abs(yDist) > Math.abs(xDist) * 2 && Math.abs(yDist) > 10 && !app.isHorizontal) {
+                //Copy the row
+                for (var i = 0; i < fieldSize; i++) {
+                    moveTiles.push(tileArray[i][app.oldCol]);
+                }
+
+                app.isVertical = true;
+
+                app.currentRow = Math.floor((app.game.world.height - app.currentY) / tileSize);
+
+                var dist = app.currentRow - app.oldRow;
+
+                for (var i = 0; i < fieldSize; i++) {
+
+                    var index = i + dist;
+
+                    if (index >= fieldSize) {
+                        index = index - fieldSize;
+                    }
+                    if (index < 0) {
+                        index = index + fieldSize;
+                    }
+
+                    tileArray[index][app.oldCol] = moveTiles[i];
+                    tileArray[index][app.oldCol].y = (((fieldSize - 1)) - index) * tileSize + tileSize / 2;
+
+
+                }
+                app.oldRow = app.currentRow;
+                app.oldY = app.currentY;
+
+            }
+
         }
     }
 
@@ -98,7 +150,24 @@ window.onload = function () {
         }
     }
 
+    //checks for a left to right match index 1 is y index in array and index 2 is x color is type of match
     function checkLeftRight(index1, index2, color) {
+        var num = 0;
+        for (var i = index2; i < fieldSize; i++) {
+            if (tileArray[index1][i].frame == color) {
+                num++;
+            } else {
+                break;
+            }
+        }
+
+        if (num > 2) {
+            console.log("Left Right - " + index2 + ", " + index1 + ": " + num);
+        }
+    }
+
+    //checks for a bottom to to match index 1 is y index in array and index 2 is x color is type of match
+    function checkTopDown(index1, index2, color) {
         var num = 0;
 
         for (var i = index1; i < fieldSize; i++) {
@@ -110,34 +179,20 @@ window.onload = function () {
         }
 
         if (num > 2) {
-            console.log("Left Right - " + index1 + ", " + index2 + ": " + num);
-        }
-    }
-
-    function checkTopDown(index1, index2, color) {
-        var num = 0;
-
-        for (var i = index2; i < fieldSize; i++) {
-            if (tileArray[index1][i].frame == color) {
-                num++;
-            } else {
-                break;
-            }
-        }
-
-        if (num > 2) {
-            console.log("Top Down - " + index1 + ", " + index2 + ": " + num);
+            console.log("Top Down - " + index2 + ", " + index1 + ": " + num);
         }
     }
 
     function startSwipe() {
         //Set start coordinates
-        app.startX = app.game.input.worldX;
-        app.startY = app.game.input.worldY;
+        app.oldX = app.game.input.worldX;
+        app.oldY = app.game.input.worldY;
 
         //Retrieve the picked column/row
-        app.movingRow = Math.floor((app.game.world.height - app.startY) / tileSize);
-        app.movingCol = Math.floor((app.game.world.width - app.startX) / tileSize);
+        app.oldRow = Math.floor((app.game.world.height - app.oldY) / tileSize);
+        app.oldCol = Math.floor((app.game.world.width - app.oldX) / tileSize);
+
+        app.dragging = true;
 
         //Stop looking for onDown, begin looking for onUp
         app.game.input.onDown.remove(startSwipe);
@@ -145,95 +200,21 @@ window.onload = function () {
     }
 
     function endSwipe() {
-        //Save end coordinates
-        app.endX = app.game.input.worldX;
-        app.endY = app.game.input.worldY;
-
-        //Determine distance travelled in the X and Y
-        var xDist = app.startX - app.endX;
-        var yDist = app.startY - app.endY;
-        var moveTiles = [];
-
-
-        //Print out old array
-        console.log("Old Array");
-        var row = tileArray[5].slice(0);
-        console.log(row[0].frame + "," + row[1].frame + "," + row[2].frame + "," + row[3].frame + "," + row[4].frame + "," + row[5].frame);
-  
-
-        //A Horizontal swipe takes place when xDist is at least twice yDist and at least 10 pixels
-        if (Math.abs(xDist) > Math.abs(yDist) * 2 && Math.abs(xDist) > 10) {
-            //Copy the row
-            moveTiles = tileArray[app.movingRow].slice(0);
-
-            app.endCol = Math.floor((app.game.world.width - app.endX) / tileSize);
-
-            var dist = app.endCol - app.movingCol;
-
-            for ( var i = 0;  i < fieldSize; i++)
-            {
-
-                var index = i + dist;
-
-                if(index >= fieldSize )
-                {
-                    index = index - fieldSize;
-                }
-                if (index < 0 ) {
-                    index = index + fieldSize;
-                }
-
-                console.log(index);
-
-                tileArray[app.movingRow][index] = moveTiles[i];
-                tileArray[app.movingRow][index].x = (((fieldSize - 1)) - index) * tileSize + tileSize / 2;
-
-
-            }
-
-            console.log(tileArray[app.movingRow]);
-
-        } // end horizontal
-
-        //A Vertical swipe takes place when yDist is at least twice xDist and at least 10 pixels
-        if (Math.abs(yDist) > Math.abs(xDist) * 2 && Math.abs(yDist) > 10) {
-            //Copy the row
-            for (var i = 0; i < fieldSize; i++) {
-                moveTiles.push(tileArray[i][app.movingCol]);
-            }
-
-            app.endRow = Math.floor((app.game.world.height - app.endY) / tileSize);
-
-            var dist = app.endRow - app.movingRow;
-
-            for (var i = 0; i < fieldSize; i++) {
-
-                var index = i + dist;
-
-                if (index >= fieldSize) {
-                    index = index - fieldSize;
-                }
-                if (index < 0) {
-                    index = index + fieldSize;
-                }
-
-                console.log(index);
-
-                tileArray[index][app.movingCol] = moveTiles[i];
-                tileArray[index][app.movingCol].y = (((fieldSize - 1)) - index) * tileSize + tileSize / 2;
-
-
-            }
-
-            console.log(tileArray[app.movingRow]);
-        }
-
-        //Print out new array
-        console.log("New Array");
-        var newRow = tileArray[5].slice(0);
-        console.log(newRow[0].type + "," + newRow[1].type + "," + newRow[2].type + "," + newRow[3].type + "," + newRow[4].type + "," + newRow[5].type);
 
         doMatchCheck();
+
+        //reset swipe related values
+        app.oldX = 0;
+        app.oldY = 0;
+        app.currentX = 0;
+        app.currentY = 0;
+        app.dragging = false;
+        app.isHorizontal = false;
+        app.isVertical = false;
+        app.oldRow = 0;
+        app.oldCol = 0;
+        app.currentRow = 0;
+        app.currentCol = 0;
 
         //Stop looking for onUp, begin looking for onDown
         app.game.input.onDown.add(startSwipe, this);
