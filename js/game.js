@@ -1,4 +1,4 @@
-"use strict";
+
 
 var app = app || {};
 
@@ -9,6 +9,8 @@ window.onload = function () {
 
     app.startX;
     app.startY;
+    app.endX;
+    app.endY;
     app.dragging;
     app.movingRow;
     app.movingCol;
@@ -41,11 +43,13 @@ window.onload = function () {
                 var randomTile = Math.floor(Math.random() * tileTypes);
                 var theTile = app.game.add.sprite(((fieldSize - 1) - j) * tileSize + tileSize / 2, ((fieldSize - 1) - i) * tileSize + tileSize / 2, "tiles");
                 theTile.frame = randomTile;
+                theTile.col = i;
                 theTile.anchor.setTo(0.5, 0.5);
                 tileArray[i][j] = theTile;
                 tileGroup.add(theTile);
             }
-            app.game.input.onDown.add(pickTile, this);
+            //app.game.input.onDown.add(pickTile, this);
+            app.game.input.onDown.add(startSwipe, this);
         }
     }
 
@@ -67,7 +71,7 @@ window.onload = function () {
         // now dragging is allowed
         app.dragging = true;
         // update listeners
-        app.game.input.onDown.remove(pickTile, this);
+        app.game.input.onUp.add(startSwipe, this);
         //game.input.onUp.add(releaseTile, this);
     }
 
@@ -78,7 +82,6 @@ window.onload = function () {
             // move the tile
             tileArray[app.movingRow][app.movingCol].x = app.game.input.worldX;
             tileArray[app.movingRow][app.movingCol].y = app.game.input.worldY;
-
             doMatchCheck();
         }
     }
@@ -123,4 +126,124 @@ window.onload = function () {
             console.log("Top Down - " + index1 + ", " + index2 + ": " + num);
         }
     }
+
+    function startSwipe() {
+        //Set start coordinates
+        app.startX = app.game.input.worldX;
+        app.startY = app.game.input.worldY;
+
+        //Retrieve the picked column/row
+        app.movingRow = Math.floor((app.game.world.height - app.startY) / tileSize);
+        app.movingCol = Math.floor((app.game.world.width - app.startX) / tileSize);
+
+        //Stop looking for onDown, begin looking for onUp
+        app.game.input.onDown.remove(startSwipe);
+        app.game.input.onUp.add(endSwipe, app);
+    }
+
+    function endSwipe() {
+        //Save end coordinates
+        app.endX = app.game.input.worldX;
+        app.endY = app.game.input.worldY;
+
+        //Determine distance travelled in the X and Y
+        var xDist = app.startX - app.endX;
+        var yDist = app.startY - app.endY;
+        var moveTiles = [];
+
+
+        //Print out old array
+        console.log("Old Array");
+        var row = tileArray[5].slice(0);
+        console.log(row[0].frame + "," + row[1].frame + "," + row[2].frame + "," + row[3].frame + "," + row[4].frame + "," + row[5].frame);
+        for (var i = 0; i < fieldSize; i++) {
+            //row = tileArray[i].slice(0);
+            //console.log(row[0].frame + "," + row[1].frame + "," + row[2].frame + "," + row[3].frame + "," + row[4].frame + "," + row[5].frame);
+        }
+
+        //A Horizontal swipe takes place when xDist is at least twice yDist and at least 10 pixels
+        if (Math.abs(xDist) > Math.abs(yDist) * 2 && Math.abs(xDist) > 10) {
+            //Copy the row
+            moveTiles = tileArray[app.movingRow].slice(0);
+
+            //Left
+            if (xDist > 0) {
+                for (var i = 0; i < fieldSize; i++) {
+                    //The rightmost tile is replaced by the leftmost tile
+                    if (i == fieldSize - 1) {
+                        tileArray[app.movingRow][i] = moveTiles[0];
+                    }
+                        //Otherwise, just shift left
+                    else {
+                        tileArray[app.movingRow][i] = moveTiles[i + 1];
+                    }
+                }
+            }
+                //Right
+            else {
+                for (var i = 0; i < fieldSize; i++) {
+                    //The leftmost tile is replaced by the rightmost tile
+                    if (i == 0) {
+                        tileArray[app.movingRow][0] = moveTiles[fieldSize - 1];
+                    }
+                        //Otherwise, just shift right
+                    else {
+                        tileArray[app.movingRow][i] = moveTiles[i - 1];
+                    }
+                }
+            }
+        }
+
+        //A Vertical swipe takes place when yDist is at least twice xDist and at least 10 pixels
+        if (Math.abs(yDist) > Math.abs(xDist) * 2 && Math.abs(yDist) > 10) {
+            //Copy the row
+            for (var i = 0; i < fieldSize; i++) {
+                moveTiles.push(tileArray[i][app.movingCol]);
+            }
+            //Up
+            if (yDist > 0) {
+                for (var i = 0; i < fieldSize; i++) {
+                    //The bottom tile is replaced by the top tile
+                    if (i == fieldSize - 1) {
+                        tileArray[i][app.movingCol] = moveTiles[0];
+                    }
+                        //Otherwise, just shift each tile up
+                    else {
+                        tileArray[i][app.movingCol] = moveTiles[i + 1];
+                    }
+                }
+            }
+
+                //Down
+            else {
+                for (var i = 0; i < fieldSize; i++) {
+                    //The top tile is replaced by the bottom tile
+                    if (i == 0) {
+                        tileArray[i][app.movingCol] = moveTiles[fieldSize - 1];
+                    }
+                        //Otherwise, just shift down
+                    else {
+                        tileArray[i][app.movingCol] = moveTiles[i - 1];
+                    }
+                }
+            }
+        }
+
+        //Print out new array
+        console.log("New Array");
+        var newRow = tileArray[5].slice(0);
+        console.log(newRow[0].frame + "," + newRow[1].frame + "," + newRow[2].frame + "," + newRow[3].frame + "," + newRow[4].frame + "," + newRow[5].frame);
+        console.log("New Array 2");
+        for (var i = 0; i < fieldSize; i++) {
+            //newRow = tileArray[i].slice(0);
+            //console.log(newRow[0].frame + "," + newRow[1].frame + "," + newRow[2].frame + "," + newRow[3].frame + "," + newRow[4].frame + "," + newRow[5].frame);
+        }
+
+        //Stop looking for onUp, begin looking for onDown
+        app.game.input.onDown.add(startSwipe, this);
+        app.game.input.onUp.remove(endSwipe);
+
+    }
+
+
 };
