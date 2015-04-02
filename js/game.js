@@ -16,10 +16,10 @@ window.onload = function () {
     app.isVertical = false;
     app.oldRow = 0;
     app.oldCol = 0;
+    app.startCol = 0;
+    app.startRow = 0;
     app.currentRow = 0;
     app.currentCol = 0;
-
-
 
     var tileSize = 50;				// tile size, in pixels
     var fieldSize = 6;     			// number of tiles per row/column
@@ -74,11 +74,12 @@ window.onload = function () {
             var moveTiles = [];
 
             //A Horizontal swipe takes place when xDist is at least twice yDist and at least 10 world units
+            // see veritical block for more details
             if (Math.abs(xDist) > Math.abs(yDist) * 2 && Math.abs(xDist) > 10 && !app.isVertical) {
                 //Copy the row
                 moveTiles = tileArray[app.oldRow].slice(0);
 
-                app.isHorizontal = true; 
+                app.isHorizontal = true;
 
                 app.currentCol = Math.floor((app.game.world.width - app.currentX) / tileSize);
 
@@ -106,13 +107,13 @@ window.onload = function () {
 
             //A Vertical swipe takes place when yDist is at least twice xDist and at least 10 world units
             if (Math.abs(yDist) > Math.abs(xDist) * 2 && Math.abs(yDist) > 10 && !app.isHorizontal) {
-                //Copy the row
+                //Copy the col
                 for (var i = 0; i < fieldSize; i++) {
                     moveTiles.push(tileArray[i][app.oldCol]);
                 }
-
                 app.isVertical = true;
 
+                //caluclate which row the mouse is curently in
                 app.currentRow = Math.floor((app.game.world.height - app.currentY) / tileSize);
 
                 var dist = app.currentRow - app.oldRow;
@@ -121,6 +122,7 @@ window.onload = function () {
 
                     var index = i + dist;
 
+                    //if the new row index of the sqare is in
                     if (index >= fieldSize) {
                         index = index - fieldSize;
                     }
@@ -128,7 +130,9 @@ window.onload = function () {
                         index = index + fieldSize;
                     }
 
+                    //move it in the array
                     tileArray[index][app.oldCol] = moveTiles[i];
+                    //move it's position
                     tileArray[index][app.oldCol].y = (((fieldSize - 1)) - index) * tileSize + tileSize / 2;
 
 
@@ -192,6 +196,9 @@ window.onload = function () {
         app.oldRow = Math.floor((app.game.world.height - app.oldY) / tileSize);
         app.oldCol = Math.floor((app.game.world.width - app.oldX) / tileSize);
 
+        app.startRow = app.oldRow;
+        app.startCol = app.oldCol;
+
         app.dragging = true;
 
         //Stop looking for onDown, begin looking for onUp
@@ -201,7 +208,12 @@ window.onload = function () {
 
     function endSwipe() {
 
-        doMatchCheck();
+        //Check to see we did not end in the same place we started
+        if (!(app.startCol == app.oldCol && app.startRow == app.oldRow)) {
+            doMatchCheck();
+        } else {
+            console.log("no movment");
+        }
 
         //reset swipe related values
         app.oldX = 0;
@@ -219,8 +231,5 @@ window.onload = function () {
         //Stop looking for onUp, begin looking for onDown
         app.game.input.onDown.add(startSwipe, this);
         app.game.input.onUp.remove(endSwipe);
-
     }
-
-
 };
