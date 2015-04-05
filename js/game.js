@@ -50,6 +50,17 @@ window.onload = function () {
                 var theTile = app.game.add.sprite(((fieldSize - 1) - j) * tileSize + tileSize / 2, ((fieldSize - 1) - i) * tileSize + tileSize / 2, "tiles");
                 theTile.frame = randomTile;
                 theTile.type = randomTile;
+                theTile.active = true;
+
+                /*
+                // here to test  sort
+                if (i == 0 || i == 1)
+                {
+                    theTile.active = false;
+                    theTile.frame = 5;
+                }
+                */
+                
                 theTile.col = i;
                 theTile.anchor.setTo(0.5, 0.5);
                 tileArray[i][j] = theTile;
@@ -215,6 +226,15 @@ window.onload = function () {
             console.log("no movment");
         }
 
+        /*
+        //sort testing again
+        tileArray[app.startRow][app.startCol].active = false;
+        tileArray[app.startRow][app.startCol].frame = 5;
+        
+
+        sort();
+        */
+
         //reset swipe related values
         app.oldX = 0;
         app.oldY = 0;
@@ -225,11 +245,44 @@ window.onload = function () {
         app.isVertical = false;
         app.oldRow = 0;
         app.oldCol = 0;
-        app.currentRow = 0;
         app.currentCol = 0;
+        app.currentRow = 0;
 
         //Stop looking for onUp, begin looking for onDown
         app.game.input.onDown.add(startSwipe, this);
         app.game.input.onUp.remove(endSwipe);
+    }
+
+    //when called loops though array and sorts it puting 
+    function sort() {
+
+        for (var i = 0; i < fieldSize; i++) {
+
+            for (var j = 0; j < fieldSize; j++) {
+                if (!tileArray[j][i].active) {
+
+                    for (var k = j + 1; k < fieldSize; k++)
+                    {
+                        if(tileArray[k][i].active){
+                            
+                            var temp = tileArray[k][i];
+                            var tempY = temp.y;
+                            var inactiveY = tileArray[j][i].y;
+
+                            tileArray[k][i] = tileArray[j][i];
+                            tileArray[j][i] = temp;
+
+                            tileArray[k][i].y = tempY;
+                            tileArray[j][i].y = inactiveY;
+
+                            break;
+
+                        }
+                    }
+
+                }
+            }
+
+        }
     }
 };
