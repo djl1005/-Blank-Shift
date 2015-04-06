@@ -46,7 +46,7 @@ window.onload = function () {
         for (var i = 0; i < fieldSize; i++) {
             tileArray[i] = [];
             for (var j = 0; j < fieldSize; j++) {
-                var randomTile = Math.floor(Math.random() * tileTypes);
+                var randomTile = Math.floor(Math.random() * tileTypes -1);
                 var theTile = app.game.add.sprite(((fieldSize - 1) - j) * tileSize + tileSize / 2, ((fieldSize - 1) - i) * tileSize + tileSize / 2, "tiles");
                 theTile.frame = randomTile;
                 theTile.type = randomTile;
@@ -159,17 +159,36 @@ window.onload = function () {
     function doMatchCheck() {
         for (var i = 0; i < fieldSize; i++) {
             for (var j = 0; j < fieldSize; j++) {
-                checkLeftRight(i, j, tileArray[i][j].frame);
-                checkTopDown(i, j, tileArray[i][j].frame);
+
+                var leftRight = checkLeftRight(i, j, tileArray[i][j].frame);
+                var topDown = checkTopDown(i, j, tileArray[i][j].frame);
+
+                if (leftRight > 2 && tileArray[i][j].active) {
+                    for (var k = 0; k < leftRight; k++) {
+                        console.log("left");
+                        tileArray[i][j + k].active = false;
+                        tileArray[i][j + k].frame = 5;
+                    }
+                }
+
+                if ( topDown > 2 && tileArray[i][j].active) {
+                    for (var k = 0; k < topDown; k++) {
+                        tileArray[i + k][j].active = false;
+                        tileArray[i + k][j].frame = 5;
+                    }
+                }
             }
         }
+
+        //sort();
+        //repopulate();
     }
 
     //checks for a left to right match index 1 is y index in array and index 2 is x color is type of match
     function checkLeftRight(index1, index2, color) {
         var num = 0;
         for (var i = index2; i < fieldSize; i++) {
-            if (tileArray[index1][i].frame == color) {
+            if (tileArray[index1][i].frame === color && tileArray[index1][i].active) {
                 num++;
             } else {
                 break;
@@ -179,6 +198,8 @@ window.onload = function () {
         if (num > 2) {
             console.log("Left Right - " + index2 + ", " + index1 + ": " + num);
         }
+
+        return num;
     }
 
     //checks for a bottom to to match index 1 is y index in array and index 2 is x color is type of match
@@ -186,7 +207,7 @@ window.onload = function () {
         var num = 0;
 
         for (var i = index1; i < fieldSize; i++) {
-            if (tileArray[i][index2].frame == color) {
+            if (tileArray[i][index2].frame === color && tileArray[i][index2].active) {
                 num++;
             } else {
                 break;
@@ -196,6 +217,8 @@ window.onload = function () {
         if (num > 2) {
             console.log("Top Down - " + index2 + ", " + index1 + ": " + num);
         }
+
+        return num;
     }
 
     function startSwipe() {
@@ -283,6 +306,19 @@ window.onload = function () {
                 }
             }
 
+        }
+    }
+
+    function repopulate() {
+        for (var i = 0; i < fieldSize; i++) {
+            for (var j = 0; j < fieldSize; j++) {
+                if (!tileArray[i][j].active) {
+                    var randomTile = Math.floor(Math.random() * tileTypes);
+                    tileArray[i][j].frame = randomTile;
+                    tileArray[i][j].type = randomTile;
+                    tileArray[i][j].active = true;
+                }
+            }
         }
     }
 };
