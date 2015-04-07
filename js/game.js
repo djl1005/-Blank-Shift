@@ -182,7 +182,7 @@ window.onload = function () {
             }
         }
 
-        //sort();
+        sort();
         repopulate();
     }
 
