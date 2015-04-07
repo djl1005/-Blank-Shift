@@ -23,7 +23,7 @@ window.onload = function () {
 
     var tileSize = 50;				// tile size, in pixels
     var fieldSize = 6;     			// number of tiles per row/column
-    var tileTypes = 6;				// different kind of tiles allowed
+    var tileTypes = 9;				// different kind of tiles allowed
     var pickedZoom = 1.1;              // zoom ratio to highlight picked tile
 
     var tileArray = [];				// array with all game tiles
@@ -31,7 +31,7 @@ window.onload = function () {
     var movingTileGroup;               // group containing the moving tile
 
     function onPreload() {
-        app.game.load.spritesheet("tiles", "media/tiles.png", 50, 50);
+        app.game.load.spritesheet("tiles", "media/tiles.png", 100, 100);
     }
 
     function onCreate() {
@@ -46,8 +46,10 @@ window.onload = function () {
         for (var i = 0; i < fieldSize; i++) {
             tileArray[i] = [];
             for (var j = 0; j < fieldSize; j++) {
-                var randomTile = Math.floor(Math.random() * tileTypes -1);
+                var randomTile = Math.floor(Math.random() * tileTypes);
                 var theTile = app.game.add.sprite(((fieldSize - 1) - j) * tileSize + tileSize / 2, ((fieldSize - 1) - i) * tileSize + tileSize / 2, "tiles");
+				theTile.scale.x = 0.5;
+				theTile.scale.y = 0.5;
                 theTile.frame = randomTile;
                 theTile.type = randomTile;
                 theTile.active = true;
@@ -167,21 +169,21 @@ window.onload = function () {
                     for (var k = 0; k < leftRight; k++) {
                         console.log("left");
                         tileArray[i][j + k].active = false;
-                        tileArray[i][j + k].frame = 5;
+                        //tileArray[i][j + k].frame = Math.floor(Math.random() * tileTypes - 1);
                     }
                 }
 
                 if ( topDown > 2 && tileArray[i][j].active) {
                     for (var k = 0; k < topDown; k++) {
                         tileArray[i + k][j].active = false;
-                        tileArray[i + k][j].frame = 5;
+                        //tileArray[i + k][j].frame = Math.floor(Math.random() * tileTypes - 1);
                     }
                 }
             }
         }
 
         //sort();
-        //repopulate();
+        repopulate();
     }
 
     //checks for a left to right match index 1 is y index in array and index 2 is x color is type of match
