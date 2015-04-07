@@ -25,6 +25,7 @@ window.onload = function () {
     var fieldSize = 6;     			// number of tiles per row/column
     var tileTypes = 9;				// different kind of tiles allowed
     var pickedZoom = 1.1;              // zoom ratio to highlight picked tile
+    var score = 0;
 
     var tileArray = [];				// array with all game tiles
     var tileGroup; 				// group containing all tiles
@@ -68,6 +69,7 @@ window.onload = function () {
                 tileArray[i][j] = theTile;
                 tileGroup.add(theTile);
             }
+
             //app.game.input.onDown.add(pickTile, this);
             app.game.input.onDown.add(startSwipe, this);
         }
@@ -159,6 +161,9 @@ window.onload = function () {
     }
 
     function doMatchCheck() {
+
+        var changed = false;
+
         for (var i = 0; i < fieldSize; i++) {
             for (var j = 0; j < fieldSize; j++) {
 
@@ -166,27 +171,37 @@ window.onload = function () {
                 var topDown = checkTopDown(i, j, tileArray[i][j].frame);
 
                 if (leftRight > 2 && tileArray[i][j].active) {
-                    for (var k = 0; k < leftRight; k++) {
-                        console.log("left");
+                    for (var k = 1; k < leftRight; k++) {
                         tileArray[i][j + k].active = false;
-                        //tileArray[i][j + k].frame = Math.floor(Math.random() * tileTypes - 1);
+                        score += leftRight;
+                        changed = true;
                     }
                 }
 
                 if ( topDown > 2 && tileArray[i][j].active) {
-                    for (var k = 0; k < topDown; k++) {
+                    for (var k = 1; k < topDown; k++) {
                         tileArray[i + k][j].active = false;
-                        //tileArray[i + k][j].frame = Math.floor(Math.random() * tileTypes - 1);
+                        score += topDown;
+                        changed = true;
                     }
+                }
+
+                if (changed) {
+                    tileArray[i][j].active = false;
                 }
             }
         }
 
         sort();
         repopulate();
+
+        if (changed) {
+            doMatchCheck();
+            console.log("Your score is: " + score);
+        }
     }
 
-    //checks for a left to right match index 1 is y index in array and index 2 is x color is type of match
+    //checks for a left to right match: index 1 is y index in array, index 2 is x, color is type of match
     function checkLeftRight(index1, index2, color) {
         var num = 0;
         for (var i = index2; i < fieldSize; i++) {
@@ -197,14 +212,10 @@ window.onload = function () {
             }
         }
 
-        if (num > 2) {
-            console.log("Left Right - " + index2 + ", " + index1 + ": " + num);
-        }
-
         return num;
     }
 
-    //checks for a bottom to to match index 1 is y index in array and index 2 is x color is type of match
+    //checks for a bottom to to match: index 1 is y index in array, index 2 is x, color is type of match
     function checkTopDown(index1, index2, color) {
         var num = 0;
 
@@ -214,10 +225,6 @@ window.onload = function () {
             } else {
                 break;
             }
-        }
-
-        if (num > 2) {
-            console.log("Top Down - " + index2 + ", " + index1 + ": " + num);
         }
 
         return num;
