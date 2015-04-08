@@ -1,9 +1,10 @@
 
 
 var app = app || {};
+    "use strict";
 
 window.onload = function () {
-    "use strict";
+
 
     app.game = new Phaser.Game(300, 300, Phaser.CANVAS, "", { preload: onPreload, create: onCreate, update: onUpdate });
 
@@ -53,9 +54,10 @@ window.onload = function () {
                 var theTile = app.game.add.sprite(((fieldSize - 1) - j) * tileSize + tileSize / 2, ((fieldSize - 1) - i) * tileSize + tileSize / 2, "tiles");
 				theTile.scale.x = 0.5;
 				theTile.scale.y = 0.5;
-                theTile.frame = randomTile;
-                theTile.type = randomTile;
-                theTile.active = true;
+                theTile.frame = randomTile || 0;
+                theTile.type = randomTile || 0;
+                theTile.LRactive = true;
+                theTile.TDactive = true;
 
                 /*
                 // here to test  sort
@@ -174,25 +176,28 @@ window.onload = function () {
                 var leftRight = checkLeftRight(i, j, tileArray[i][j].frame);
                 var topDown = checkTopDown(i, j, tileArray[i][j].frame);
 
-                if (leftRight > 2 && tileArray[i][j].active) {
-                    for (var k = 1; k < leftRight; k++) {
-                        tileArray[i][j + k].active = false;
+                //console.log("i:" + i + " j:" + j + " frame:" + tileArray[i][j].frame);
+
+                var localChange = false;
+
+                if (leftRight > 2 && tileArray[i][j].LRactive) {
+                    for (var k = 0; k < leftRight; k++) {
+                        tileArray[i][j + k].LRactive = false;
                         score += leftRight;
                         changed = true;
+                        localChange = true;
                     }
                 }
 
-                if ( topDown > 2 && tileArray[i][j].active) {
-                    for (var k = 1; k < topDown; k++) {
-                        tileArray[i + k][j].active = false;
+                if ( topDown > 2 && tileArray[i][j].TDactive) {
+                    for (var k = 0; k < topDown; k++) {
+                        tileArray[i + k][j].TDactive = false;
                         score += topDown;
                         changed = true;
+                        localChange = true;
                     }
                 }
 
-                if (changed) {
-                    tileArray[i][j].active = false;
-                }
             }
         }		
 
@@ -210,7 +215,8 @@ window.onload = function () {
     function checkLeftRight(index1, index2, color) {
         var num = 0;
         for (var i = index2; i < fieldSize; i++) {
-            if (tileArray[index1][i].frame === color && tileArray[index1][i].active) {
+            
+            if ((tileArray[index1][i].frame == color) && tileArray[index1][i].LRactive) {
                 num++;
             } else {
                 break;
@@ -225,7 +231,7 @@ window.onload = function () {
         var num = 0;
 
         for (var i = index1; i < fieldSize; i++) {
-            if (tileArray[i][index2].frame === color && tileArray[i][index2].active) {
+            if ((tileArray[i][index2].frame == color) && tileArray[i][index2].TDactive) {
                 num++;
             } else {
                 break;
@@ -296,11 +302,11 @@ window.onload = function () {
         for (var i = 0; i < fieldSize; i++) {
 
             for (var j = 0; j < fieldSize; j++) {
-                if (!tileArray[j][i].active) {
+                if (!(tileArray[j][i].LRactive && tileArray[j][i].TDactive )) {
 
                     for (var k = j + 1; k < fieldSize; k++)
                     {
-                        if(tileArray[k][i].active){
+                        if(tileArray[k][i].LRactive && tileArray[k][i].TDactive){
                             
                             var temp = tileArray[k][i];
                             var tempY = temp.y;
@@ -326,11 +332,12 @@ window.onload = function () {
     function repopulate() {
         for (var i = 0; i < fieldSize; i++) {
             for (var j = 0; j < fieldSize; j++) {
-                if (!tileArray[i][j].active) {
+                if (!(tileArray[i][j].LRactive && tileArray[i][j].TDactive)) {
                     var randomTile = Math.floor(Math.random() * tileTypes);
                     tileArray[i][j].frame = randomTile;
                     tileArray[i][j].type = randomTile;
-                    tileArray[i][j].active = true;
+                    tileArray[i][j].LRactive = true;
+                    tileArray[i][j].TDactive = true;
                 }
             }
         }
