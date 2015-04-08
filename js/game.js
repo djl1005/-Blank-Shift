@@ -178,8 +178,6 @@ window.onload = function () {
 
                 //console.log("i:" + i + " j:" + j + " frame:" + tileArray[i][j].frame);
 
-                var localChange = false;
-
                 if (leftRight > 2 && tileArray[i][j].LRactive) {
                     for (var k = 0; k < leftRight; k++) {
                         tileArray[i][j + k].LRactive = false;
