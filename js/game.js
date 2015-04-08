@@ -30,6 +30,8 @@ window.onload = function () {
     var tileArray = [];				// array with all game tiles
     var tileGroup; 				// group containing all tiles
     var movingTileGroup;               // group containing the moving tile
+	
+	var scoreText = null;	//Text for the players score
 
     function onPreload() {
         app.game.load.spritesheet("tiles", "media/tiles.png", 100, 100);
@@ -70,6 +72,8 @@ window.onload = function () {
                 tileGroup.add(theTile);
             }
 
+			scoreText = app.game.add.text(app.game.world.centerX, 10, "Score :", {font: '25px Arial', fill: '#fff', stroke: '#000'});
+			scoreText.strokeThickness = 5;
             //app.game.input.onDown.add(pickTile, this);
             app.game.input.onDown.add(startSwipe, this);
         }
@@ -190,7 +194,7 @@ window.onload = function () {
                     tileArray[i][j].active = false;
                 }
             }
-        }
+        }		
 
         sort();
         repopulate();
@@ -198,6 +202,7 @@ window.onload = function () {
         if (changed) {
             doMatchCheck();
             console.log("Your score is: " + score);
+			scoreText.setText("Score : " + score);
         }
     }
 
