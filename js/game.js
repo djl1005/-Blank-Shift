@@ -6,7 +6,7 @@ var app = app || {};
 window.onload = function () {
 
 
-    app.game = new Phaser.Game(300, 300, Phaser.CANVAS, "", { preload: onPreload, create: onCreate, update: onUpdate });
+    app.game = new Phaser.Game(300, 350, Phaser.CANVAS, "", { preload: onPreload, create: onCreate, update: onUpdate });
 
     app.oldX = 0;
     app.oldY = 0;
@@ -32,7 +32,10 @@ window.onload = function () {
     var tileGroup; 				// group containing all tiles
     var movingTileGroup;               // group containing the moving tile
 	
-	var scoreText = null;	//Text for the players score
+	var scoreText = null;	//Text for the player's score
+	var moves = null;
+	var moveText = null;	//Text for the player's remaining moves
+	var uiShift = 50;		//Pixels to shift the board down by
 
     function onPreload() {
         app.game.load.spritesheet("tiles", "media/tiles.png", 100, 100);
@@ -42,6 +45,7 @@ window.onload = function () {
         // show the game in full screen
         app.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
         app.game.scale.setScreenSize();
+		app.game.stage.backgroundColor = '#8E669A';
         // add groups. movingTileGroup needs to be above tileGroup so moving tiles
         // will always have an higher z index and will always stay on top of the game
         tileGroup = app.game.add.group();
@@ -51,7 +55,7 @@ window.onload = function () {
             tileArray[i] = [];
             for (var j = 0; j < fieldSize; j++) {
                 var randomTile = Math.floor(Math.random() * tileTypes);
-                var theTile = app.game.add.sprite(((fieldSize - 1) - j) * tileSize + tileSize / 2, ((fieldSize - 1) - i) * tileSize + tileSize / 2, "tiles");
+                var theTile = app.game.add.sprite(((fieldSize - 1) - j) * tileSize + tileSize / 2, ((fieldSize - 1) - i) * tileSize + tileSize / 2 + uiShift, "tiles");
 				theTile.scale.x = 0.5;
 				theTile.scale.y = 0.5;
                 theTile.frame = randomTile || 0;
@@ -73,12 +77,13 @@ window.onload = function () {
                 tileArray[i][j] = theTile;
                 tileGroup.add(theTile);
             }
-
-			scoreText = app.game.add.text(app.game.world.centerX, 10, "Score :", {font: '25px Arial', fill: '#fff', stroke: '#000'});
-			scoreText.strokeThickness = 5;
-            //app.game.input.onDown.add(pickTile, this);
-            app.game.input.onDown.add(startSwipe, this);
         }
+
+		scoreText = app.game.add.text(app.game.world.centerX + 10, 10, "Score : 0", {font: '25px Arial', fill: '#fff'});
+		moves = 100;
+		moveText = app.game.add.text(10, 10, "Moves :" + moves, {font: '25px Arial', fill: '#fff'});
+        //app.game.input.onDown.add(pickTile, this);
+        app.game.input.onDown.add(startSwipe, this);
     }
 
 
@@ -96,7 +101,7 @@ window.onload = function () {
 
             //A Horizontal swipe takes place when xDist is at least twice yDist and at least 10 world units
             // see veritical block for more details
-            if (Math.abs(xDist) > Math.abs(yDist) * 2 && Math.abs(xDist) > 10 && !app.isVertical) {
+            if (app.oldY > uiShift && Math.abs(xDist) > Math.abs(yDist) * 2 && Math.abs(xDist) > 10 && !app.isVertical) {
                 //Copy the row
                 moveTiles = tileArray[app.oldRow].slice(0);
 
@@ -123,11 +128,11 @@ window.onload = function () {
                 }
                 app.oldCol = app.currentCol;
                 app.oldX = app.currentX;
-
+				
             } // end horizontal
 
             //A Vertical swipe takes place when yDist is at least twice xDist and at least 10 world units
-            if (Math.abs(yDist) > Math.abs(xDist) * 2 && Math.abs(yDist) > 10 && !app.isHorizontal) {
+            if (app.oldY > uiShift && Math.abs(yDist) > Math.abs(xDist) * 2 && Math.abs(yDist) > 10 && !app.isHorizontal) {
                 //Copy the col
                 for (var i = 0; i < fieldSize; i++) {
                     moveTiles.push(tileArray[i][app.oldCol]);
@@ -154,13 +159,12 @@ window.onload = function () {
                     //move it in the array
                     tileArray[index][app.oldCol] = moveTiles[i];
                     //move it's position
-                    tileArray[index][app.oldCol].y = (((fieldSize - 1)) - index) * tileSize + tileSize / 2;
+                    tileArray[index][app.oldCol].y = (((fieldSize - 1)) - index) * tileSize + tileSize / 2 + uiShift;
 
 
                 }
                 app.oldRow = app.currentRow;
                 app.oldY = app.currentY;
-
             }
 
         }
@@ -224,7 +228,7 @@ window.onload = function () {
         return num;
     }
 
-    //checks for a bottom to to match: index 1 is y index in array, index 2 is x, color is type of match
+    //checks for a bottom to top match: index 1 is y index in array, index 2 is x, color is type of match
     function checkTopDown(index1, index2, color) {
         var num = 0;
 
@@ -259,9 +263,12 @@ window.onload = function () {
     }
 
     function endSwipe() {
-
         //Check to see we did not end in the same place we started
         if (!(app.startCol == app.oldCol && app.startRow == app.oldRow)) {
+			//Decrement moves and update text
+			moves--;
+			moveText.setText("Moves : " + moves);
+			
             doMatchCheck();
         } else {
             console.log("no movment");
