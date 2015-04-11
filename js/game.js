@@ -22,6 +22,8 @@ window.onload = function () {
     app.currentRow = 0;
     app.currentCol = 0;
 
+    app.timer;
+
     var tileSize = 50;				// tile size, in pixels
     var fieldSize = 6;     			// number of tiles per row/column
     var tileTypes = 9;				// different kind of tiles allowed
@@ -39,6 +41,9 @@ window.onload = function () {
 
     function onPreload() {
         app.game.load.spritesheet("tiles", "media/tiles.png", 100, 100);
+        app.timer = new Phaser.Timer(app.game, false);
+
+        app.timer.add(250, repopulate);
     }
 
     function onCreate() {
@@ -54,7 +59,7 @@ window.onload = function () {
         for (var i = 0; i < fieldSize; i++) {
             tileArray[i] = [];
             for (var j = 0; j < fieldSize; j++) {
-                var randomTile = Math.floor(Math.random() * tileTypes);
+                var randomTile = Math.floor(Math.random() * (tileTypes - 1));
                 var theTile = app.game.add.sprite(((fieldSize - 1) - j) * tileSize + tileSize / 2, ((fieldSize - 1) - i) * tileSize + tileSize / 2 + uiShift, "tiles");
 				theTile.scale.x = 0.5;
 				theTile.scale.y = 0.5;
@@ -204,7 +209,7 @@ window.onload = function () {
         }		
 
         sort();
-        repopulate();
+        //repopulate();
 
         if (changed) {
             doMatchCheck();
@@ -297,7 +302,7 @@ window.onload = function () {
         app.currentRow = 0;
 
         //Stop looking for onUp, begin looking for onDown
-        app.game.input.onDown.add(startSwipe, this);
+        
         app.game.input.onUp.remove(endSwipe);
     }
 
@@ -307,7 +312,9 @@ window.onload = function () {
         for (var i = 0; i < fieldSize; i++) {
 
             for (var j = 0; j < fieldSize; j++) {
-                if (!(tileArray[j][i].LRactive && tileArray[j][i].TDactive )) {
+                if (!(tileArray[j][i].LRactive && tileArray[j][i].TDactive)) {
+
+                    tileArray[j][i].frame = 8;
 
                     for (var k = j + 1; k < fieldSize; k++)
                     {
@@ -316,6 +323,18 @@ window.onload = function () {
                             var temp = tileArray[k][i];
                             var tempY = temp.y;
                             var inactiveY = tileArray[j][i].y;
+
+                            var tileTween = app.game.add.tween(tileArray[j][i]);
+                            tileTween.to({
+                                x: tileArray[j][i].x,
+                                y: tempY
+                            }, 800, Phaser.Easing.Cubic.Out, true);
+
+                            var tileTween = app.game.add.tween(temp);
+                            tileTween.to({
+                                x: temp.x,
+                                y: inactiveY
+                            }, 800, Phaser.Easing.Cubic.Out, true);
 
                             tileArray[k][i] = tileArray[j][i];
                             tileArray[j][i] = temp;
@@ -332,13 +351,22 @@ window.onload = function () {
             }
 
         }
+
+        app.timer.add(500, repopulate);
+        app.game.time.add(app.timer);
+        app.timer.start();
+
+        console.log(app.timer);
     }
 
     function repopulate() {
+
+        console.log("boop");
+        app.game.input.onDown.add(startSwipe, this);
         for (var i = 0; i < fieldSize; i++) {
             for (var j = 0; j < fieldSize; j++) {
                 if (!(tileArray[i][j].LRactive && tileArray[i][j].TDactive)) {
-                    var randomTile = Math.floor(Math.random() * tileTypes);
+                    var randomTile = Math.floor(Math.random() * (tileTypes - 1));
                     tileArray[i][j].frame = randomTile;
                     tileArray[i][j].type = randomTile;
                     tileArray[i][j].LRactive = true;
