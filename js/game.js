@@ -378,7 +378,7 @@ window.onload = function () {
     function repopulate(changed) {
 
         
-        app.game.input.onDown.add(startSwipe, this);
+       
         for (var i = 0; i < fieldSize; i++) {
             for (var j = 0; j < fieldSize; j++) {
                 if (!(tileArray[i][j].LRactive && tileArray[i][j].TDactive)) {
@@ -395,6 +395,8 @@ window.onload = function () {
             doMatchCheck();
             console.log("Your score is: " + score);
             scoreText.setText("Score : " + score);
+        } else {
+            app.game.input.onDown.add(startSwipe, this);
         }
     }
 };
