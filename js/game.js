@@ -86,7 +86,12 @@ window.onload = function () {
 
 		scoreText = app.game.add.text(app.game.world.centerX + 10, 10, "Score : 0", {font: '25px Arial', fill: '#fff'});
 		moves = 100;
-		moveText = app.game.add.text(10, 10, "Moves :" + moves, {font: '25px Arial', fill: '#fff'});
+		moveText = app.game.add.text(10, 10, "Moves :" + moves, { font: '25px Arial', fill: '#fff' });
+        
+        //Make sure there are no matches on spawn
+		doMatchCheck();
+		score = 0;
+
         //app.game.input.onDown.add(pickTile, this);
         app.game.input.onDown.add(startSwipe, this);
     }
@@ -192,7 +197,13 @@ window.onload = function () {
                 if (leftRight > 2 && tileArray[i][j].LRactive) {
                     for (var k = 0; k < leftRight; k++) {
                         tileArray[i][j + k].LRactive = false;
-                        score += leftRight;
+
+                        if (tileArray[i][j].frame == 8) {
+                            move += leftRight - 1;
+                        } else {
+                            score += leftRight;
+                        }
+
                         changed = true;
                         localChange = true;
                     }
@@ -201,22 +212,27 @@ window.onload = function () {
                 if ( topDown > 2 && tileArray[i][j].TDactive) {
                     for (var k = 0; k < topDown; k++) {
                         tileArray[i + k][j].TDactive = false;
-                        score += topDown;
+
+                        if (tileArray[i][j].frame == 8) {
+                            move += topDown - 1;
+                        } else {
+                            score += topDown;
+                        }
+
                         changed = true;
                         localChange = true;
                     }
                 }
 
             }
-        }		
+        }
+
         if (changed)
         {
             sort(changed);
         }
         
         //repopulate();
-
-
     }
 
     //checks for a left to right match: index 1 is y index in array, index 2 is x, color is type of match
