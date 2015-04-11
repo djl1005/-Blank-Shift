@@ -26,7 +26,7 @@ window.onload = function () {
 
     var tileSize = 50;				// tile size, in pixels
     var fieldSize = 6;     			// number of tiles per row/column
-    var tileTypes = 9;				// different kind of tiles allowed
+    var tileTypes = 10;				// different kind of tiles allowed
     var pickedZoom = 1.1;              // zoom ratio to highlight picked tile
     var score = 0;
 
@@ -199,7 +199,7 @@ window.onload = function () {
                         tileArray[i][j + k].LRactive = false;
 
                         if (tileArray[i][j].frame == 8) {
-                            move += leftRight - 1;
+                            moves += leftRight - 1;
                         } else {
                             score += leftRight;
                         }
@@ -214,7 +214,7 @@ window.onload = function () {
                         tileArray[i + k][j].TDactive = false;
 
                         if (tileArray[i][j].frame == 8) {
-                            move += topDown - 1;
+                            moves += topDown - 1;
                         } else {
                             score += topDown;
                         }
@@ -331,7 +331,7 @@ window.onload = function () {
             for (var j = 0; j < fieldSize; j++) {
                 if (!(tileArray[j][i].LRactive && tileArray[j][i].TDactive)) {
 
-                    tileArray[j][i].frame = 8;
+                    tileArray[j][i].frame = 9;
 
                     for (var k = j + 1; k < fieldSize; k++)
                     {
@@ -347,8 +347,8 @@ window.onload = function () {
                                 y: tempY
                             }, 800, Phaser.Easing.Cubic.Out, true);
 
-                            var tileTween = app.game.add.tween(temp);
-                            tileTween.to({
+                            var tileTween2 = app.game.add.tween(temp);
+                            tileTween2.to({
                                 x: temp.x,
                                 y: inactiveY
                             }, 800, Phaser.Easing.Cubic.Out, true);
