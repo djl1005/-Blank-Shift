@@ -179,6 +179,8 @@ window.onload = function () {
 
         var changed = false;
 
+        console.log("boop");
+
         for (var i = 0; i < fieldSize; i++) {
             for (var j = 0; j < fieldSize; j++) {
 
@@ -207,15 +209,14 @@ window.onload = function () {
 
             }
         }		
-
-        sort();
+        if (changed)
+        {
+            sort(changed);
+        }
+        
         //repopulate();
 
-        if (changed) {
-            doMatchCheck();
-            console.log("Your score is: " + score);
-			scoreText.setText("Score : " + score);
-        }
+
     }
 
     //checks for a left to right match: index 1 is y index in array, index 2 is x, color is type of match
@@ -307,7 +308,7 @@ window.onload = function () {
     }
 
     //when called loops though array and sorts it puting 
-    function sort() {
+    function sort(changed) {
 
         for (var i = 0; i < fieldSize; i++) {
 
@@ -352,16 +353,15 @@ window.onload = function () {
 
         }
 
-        app.timer.add(500, repopulate);
+        app.timer.add(250, function () { repopulate(changed); });
         app.game.time.add(app.timer);
         app.timer.start();
 
-        console.log(app.timer);
     }
 
-    function repopulate() {
+    function repopulate(changed) {
 
-        console.log("boop");
+        
         app.game.input.onDown.add(startSwipe, this);
         for (var i = 0; i < fieldSize; i++) {
             for (var j = 0; j < fieldSize; j++) {
@@ -373,6 +373,12 @@ window.onload = function () {
                     tileArray[i][j].TDactive = true;
                 }
             }
+        }
+
+        if (changed) {
+            doMatchCheck();
+            console.log("Your score is: " + score);
+            scoreText.setText("Score : " + score);
         }
     }
 };
