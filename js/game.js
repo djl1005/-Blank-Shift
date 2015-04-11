@@ -369,7 +369,7 @@ window.onload = function () {
 
         }
 
-        app.timer.add(250, function () { repopulate(changed); });
+        app.timer.add(500, function () { repopulate(changed); });
         app.game.time.add(app.timer);
         app.timer.start();
 
