@@ -200,8 +200,10 @@ window.onload = function () {
 
                         if (tileArray[i][j].frame == 8) {
                             moves += leftRight - 1;
+                            moveText.setText("Moves : " + moves);
                         } else {
                             score += leftRight;
+                            
                         }
 
                         changed = true;
@@ -215,6 +217,7 @@ window.onload = function () {
 
                         if (tileArray[i][j].frame == 8) {
                             moves += topDown - 1;
+                            moveText.setText("Moves : " + moves);
                         } else {
                             score += topDown;
                         }
