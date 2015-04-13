@@ -191,6 +191,14 @@ mainScreen.prototype = {
 			this.redGlow.y = this.tileArray[this.startRow][this.startCol].y - (this.tileSize / 2);
 
 			if (this.isHorizontal) {
+			    this.rowGlow.x = 0;
+			    this.rowGlow.y = this.tileSize * (this.fieldSize - this.startRow);
+			}
+
+			if (this.isVertical) {
+			    this.columnGlow.x = this.tileSize * (this.fieldSize - this.startCol - 1);
+			    this.columnGlow.y = this.tileSize;
+			}
 		}
 		
 		if(this.moves <= 0)
@@ -208,7 +216,14 @@ mainScreen.prototype = {
 		// will always have an higher z index and will always stay on top of the game
 		this.tileGroup =  game.add.group();
 		this.movingTileGroup = game.add.group();
-		
+
+		this.rowGlow = game.add.sprite(500, 500, 'rowGlow');
+		this.rowGlow.scale.setTo(0.5, 0.5);
+		this.columnGlow = game.add.sprite(500, 500, 'columnGlow');
+		this.columnGlow.scale.setTo(0.5, 0.5);
+		this.redGlow = game.add.sprite(500, 500, 'redGlow');
+		this.redGlow.scale.setTo(0.5, 0.5);
+
 		// game field generation, all tiles initially added to "tileGroup" tile
 		for (var i = 0; i < this.fieldSize; i++) {
 			this.tileArray[i] = [];
@@ -243,6 +258,9 @@ mainScreen.prototype = {
 		this.scoreText = game.add.text(game.world.centerX + 10, 10, "Score : 0", {font: '25px Arial', fill: '#fff'});
 		this.moves = moveLimit;
 		this.moveText = game.add.text(10, 10, "Moves :" + this.moves, { font: '25px Arial', fill: '#fff' });
+
+	    //Set good and bad colors
+		this.setColors();
 		
 		//Make sure there are no matches on spawn
 		this.doMatchCheck();
@@ -254,7 +272,7 @@ mainScreen.prototype = {
 		var changed = false;
 		var localChange = false;
 
-		console.log("boop");
+		//console.log("boop");
 
 		for (var i = 0; i < this.fieldSize; i++) {
 			for (var j = 0; j < this.fieldSize; j++) {
@@ -270,7 +288,17 @@ mainScreen.prototype = {
 				        this.moves += leftRight - 1;
 				        this.moveText.setText("Moves : " + this.moves);
 				    } else {
-				        this.score += leftRight * leftRight;
+				        var bonus = leftRight * leftRight;
+
+				        if (this.tileArray[i][j].frame == this.goodColor) {
+				            bonus *= 1.5;
+				        }
+				        
+				        if (this.tileArray[i][j].frame == this.badColor) {
+				            bonus *= 0.5;
+				        }
+
+				        this.score += bonus;
 				    }
 
 					for (var k = 0; k < leftRight; k++) {
@@ -286,7 +314,16 @@ mainScreen.prototype = {
 				        this.moves += topDown - 1;
 				        this.moveText.setText("Moves : " + this.moves);
 				    } else {
-				        this.score += topDown * topDown;
+				        var bonus = topDown * topDown;
+
+				        if (this.tileArray[i][j].frame == this.goodColor) {
+				            bonus *= 1.5;
+				        }
+
+				        if (this.tileArray[i][j].frame == this.badColor) {
+				            bonus *= 0.5;
+				        }
+
 				        this.score += bonus;
 				    }
 
