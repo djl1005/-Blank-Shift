@@ -243,33 +243,32 @@ mainScreen.prototype = {
 				//console.log("i:" + i + " j:" + j + " frame:" + tileArray[i][j].frame);
 
 				if (leftRight > 2 && this.tileArray[i][j].LRactive) {
+
+				    if (this.tileArray[i][j].frame == 8) {
+				        this.moves += leftRight - 1;
+				        this.moveText.setText("Moves : " + this.moves);
+				    } else {
+				        this.score += leftRight * leftRight;
+				    }
+
 					for (var k = 0; k < leftRight; k++) {
 						this.tileArray[i][j + k].LRactive = false;
-
-						if (this.tileArray[i][j].frame == 8) {
-							this.moves += leftRight - 1;
-							this.moveText.setText("Moves : " + this.moves);
-						} else {
-							this.score += leftRight;
-							
-						}
-
 						changed = true;
 						localChange = true;
 					}
 				}
 
-				if ( topDown > 2 && this.tileArray[i][j].TDactive) {
+				if (topDown > 2 && this.tileArray[i][j].TDactive) {
+
+				    if (this.tileArray[i][j].frame == 8) {
+				        this.moves += topDown - 1;
+				        this.moveText.setText("Moves : " + this.moves);
+				    } else {
+				        this.score += topDown * topDown;
+				    }
+
 					for (var k = 0; k < topDown; k++) {
 						this.tileArray[i + k][j].TDactive = false;
-
-						if (this.tileArray[i][j].frame == 8) {
-							this.moves += topDown - 1;
-							this.moveText.setText("Moves : " + this.moves);
-						} else {
-							this.score += topDown;
-						}
-
 						changed = true;
 						localChange = true;
 					}
