@@ -1,6 +1,9 @@
 "use strict";
 
 var game = new Phaser.Game(300, 350, Phaser.CANVAS);
+var moveLimit = 15;
+var scoreLimit = 100;
+var levelScore;
 
 var mainScreen = function(game){
 	this.oldX = undefined;
@@ -86,7 +89,7 @@ mainScreen.prototype = {
 		game.scale.setScreenSize();
 		game.stage.backgroundColor = '#8E669A';
 
-		this.newBoard(500, 25);
+		this.newBoard(scoreLimit, moveLimit);
 		
 		//app.game.input.onDown.add(pickTile, this);
 		game.input.onDown.add(this.startSwipe, this);
@@ -176,7 +179,11 @@ mainScreen.prototype = {
 		}
 		
 		if(this.moves <= 0)
+		{
+			levelScore = this.score;
 			game.state.start('GameOver');
+			console.log("Level Score: " + levelScore);
+		}
 	},
 	
 	//Generates a new board layout for new levels
@@ -458,6 +465,9 @@ menuScreen.prototype = {
   	create: function(){
 		var playButton = this.game.add.button(150,175,"play",this.playGame,this);
 		playButton.anchor.setTo(0.5,0.5);
+		
+		this.goalText = game.add.text(game.world.centerX, 50, "Level Goal : " + scoreLimit, {font: '25px Arial', fill: '#fff'});
+		this.goalText.anchor.setTo(0.5, 0);
 	},
 	
 	playGame: function(){
@@ -465,7 +475,9 @@ menuScreen.prototype = {
 	}
 }
 
-var endScreen = function(game){}
+var endScreen = function(game){
+	this.scoreText = null;
+}
 
 endScreen.prototype = {
 	preload: function(){
@@ -473,11 +485,28 @@ endScreen.prototype = {
 	},
 	
 	create: function(){
-		var restartButton = this.game.add.button(150, 175, "replay", this.restart, this);
+		var restartButton = this.game.add.button(game.world.centerX, game.world.centerY, "replay", this.restart, this);
 		restartButton.anchor.setTo(0.5, 0.5);
+		
+		//Increment score goal and move limit
+		if(levelScore >= scoreLimit){
+			moveLimit += 5;
+			scoreLimit += 25;
+		}
+		
+		this.replayText = game.add.text(game.world.centerX, game.world.centerY, "Restart Level", {font: '25px Arial', fill: '#fff'});
+		this.replayText.anchor.setTo(0.5, 0.5);
+		this.scoreText = game.add.text(game.world.centerX, 10, "You scored : " + levelScore, {font: '25px Arial', fill: '#fff'});
+		this.scoreText.anchor.setTo(0.5, 0);
+		this.goalText = game.add.text(game.world.centerX, 50, "Level Goal : " + scoreLimit, {font: '25px Arial', fill: '#fff'});
+		this.goalText.anchor.setTo(0.5, 0);
+		if(levelScore >= scoreLimit){
+			this.replayText.setText("Next Level");
+		}
 	},
 	
 	restart: function(){
+		levelScore = 0;
 		this.game.state.start('Main');
 	}
 }
