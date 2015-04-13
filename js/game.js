@@ -31,16 +31,26 @@ var mainScreen = function(game){
 	this.tileArray = null;				// array with all game tiles
 	this.tileGroup = null; 				// group containing all tiles
 	this.movingTileGroup = null;               // group containing the moving tile
+
+	this.rowGlow = null;
+	this.columnGlow = null;
+	this.redGlow = null;
 	
 	this.scoreText = null;	//Text for the player's score
 	this.moves = null;
 	this.moveText = null;	//Text for the player's remaining moves
 	this.uiShift = undefined;		//Pixels to shift the board down by
+
+	this.goodColor = null;      //favored level color
+	this.badColor = null;       //unfavored level color
 }
 
 mainScreen.prototype = {
 	preload: function() {
-		game.load.spritesheet("tiles", "media/tiles.png", 100, 100);
+	    game.load.spritesheet("tiles", "media/tiles.png", 100, 100);
+	    game.load.image("rowGlow", "media/rowGlow.png");
+	    game.load.image("columnGlow", "media/columnGlow.png");
+	    game.load.image("redGlow", "media/redGlow.png");
 	},
 	
 	init: function(){
@@ -79,7 +89,7 @@ mainScreen.prototype = {
 		this.uiShift = 50;		//Pixels to shift the board down by
 		
 		var that = this;
-		console.log("That: " + that.fieldSize);
+	    //console.log("That: " + that.fieldSize);
 		//this.timer.add(250, that.repopulate);
 	},
 
@@ -176,6 +186,11 @@ mainScreen.prototype = {
 				this.oldY = this.currentY;
 			}
 
+		    //Set X and Y values for glow
+			this.redGlow.x = this.tileArray[this.startRow][this.startCol].x - (this.tileSize / 2);
+			this.redGlow.y = this.tileArray[this.startRow][this.startCol].y - (this.tileSize / 2);
+
+			if (this.isHorizontal) {
 		}
 		
 		if(this.moves <= 0)
@@ -272,6 +287,7 @@ mainScreen.prototype = {
 				        this.moveText.setText("Moves : " + this.moves);
 				    } else {
 				        this.score += topDown * topDown;
+				        this.score += bonus;
 				    }
 
 					for (var k = 0; k < topDown; k++) {
@@ -375,6 +391,14 @@ mainScreen.prototype = {
 		this.currentCol = 0;
 		this.currentRow = 0;
 
+        //reset glow positions
+		this.redGlow.x = 500;
+		this.redGlow.y = 500;
+		this.rowGlow.x = 500;
+		this.rowGlow.y = 500;
+		this.columnGlow.x = 500;
+		this.columnGlow.y = 50;;
+
 		//Stop looking for onUp, begin looking for onDown
 		
 		game.input.onUp.remove(this.endSwipe);
@@ -452,7 +476,16 @@ mainScreen.prototype = {
 		} else {
 			game.input.onDown.add(this.startSwipe, this);
 		}
-	}
+	},
+
+	setColors: function() {
+	    this.goodColor = Math.floor(Math.random() * (this.tileTypes - 1));
+	    this.badColor = Math.floor(Math.random() * (this.tileTypes - 1));
+
+	    if (this.goodColor == this.badColor) {
+	        this.setColors();
+	    }
+    }
 };		//End mainScreen.prototype
 
 var menuScreen = function(game){}
@@ -490,10 +523,10 @@ endScreen.prototype = {
 		
 		//Increment score goal and move limit
 		if(levelScore >= scoreLimit){
-			moveLimit += 5;
+			moveLimit += 2;
 			scoreLimit += 25;
 		}
-		
+
 		this.replayText = game.add.text(game.world.centerX, game.world.centerY, "Restart Level", {font: '25px Arial', fill: '#fff'});
 		this.replayText.anchor.setTo(0.5, 0.5);
 		this.scoreText = game.add.text(game.world.centerX, 10, "You scored : " + levelScore, {font: '25px Arial', fill: '#fff'});
