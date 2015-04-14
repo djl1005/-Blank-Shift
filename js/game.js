@@ -455,8 +455,8 @@ mainScreen.prototype = {
 						if(this.tileArray[k][i].LRactive && this.tileArray[k][i].TDactive){
 							
 							var temp = this.tileArray[k][i];
-							var tempY = temp.y;
-							var inactiveY = this.tileArray[j][i].y;
+							var tempY = (((this.fieldSize - 1)) - k) * this.tileSize + this.tileSize / 2 + this.uiShift;
+							var inactiveY = (((this.fieldSize - 1)) - j) * this.tileSize + this.tileSize / 2 + this.uiShift;
 
 							var tileTween = game.add.tween(this.tileArray[j][i]);
 							tileTween.to({
@@ -488,7 +488,7 @@ mainScreen.prototype = {
 
 		var that = this;
 		console.log("That: " + that.fieldSize);
-		this.timer.add(250, function () { that.repopulate(changed); });
+		this.timer.add(75, function () { that.repopulate(changed); });
 		game.time.add(this.timer);
 		this.timer.start();
 
