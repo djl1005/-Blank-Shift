@@ -4,6 +4,8 @@ var game = new Phaser.Game(300, 350, Phaser.CANVAS);
 var moveLimit = 15;
 var scoreLimit = 100;
 var levelScore;
+var totalScore;
+var highScore;
 
 var mainScreen = function(game){
 	this.oldX = undefined;
@@ -110,7 +112,7 @@ mainScreen.prototype = {
 		
 		this.newBoard(scoreLimit, moveLimit);
 
-		game.sound.play("bgm", .75, true, false);
+		game.sound.play("bgm", .5, true, false);
 		
 		//app.game.input.onDown.add(pickTile, this);
 		game.input.onDown.add(this.startSwipe, this);
@@ -223,7 +225,8 @@ mainScreen.prototype = {
 		{
 		    game.sound.removeByKey("bgm");
 		    game.sound.removeByKey("low");
-			levelScore = this.score;
+		    levelScore = this.score;
+		    totalScore += this.score;
 			game.state.start('GameOver');
 			console.log("Level Score: " + levelScore);
 		}
@@ -336,8 +339,6 @@ mainScreen.prototype = {
 
 				var leftRight = this.checkLeftRight(i, j, this.tileArray[i][j].frame);
 				var topDown = this.checkTopDown(i, j, this.tileArray[i][j].frame);
-
-				//console.log("i:" + i + " j:" + j + " frame:" + tileArray[i][j].frame);
 
 				if (leftRight > 2 && this.tileArray[i][j].LRactive) {
 
@@ -654,7 +655,7 @@ endScreen.prototype = {
 	
 	restart: function(){
 		levelScore = 0;
-		this.game.state.start('Main');
+		this.game.state.start('Menu');
 	}
 }
 
