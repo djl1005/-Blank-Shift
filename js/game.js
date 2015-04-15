@@ -58,6 +58,7 @@ mainScreen.prototype = {
 	    game.load.image("bg", "media/endScreen.png");
 	    game.load.audio("bgm", "media/background.mp3");
 	    game.load.audio("low", "media/Hearbeat.mp3");
+	    game.load.audio("target", "media/achievement.mp3");
 
 	    if (JSON.parse(localStorage.getItem('highScore') === null)) {
 	        highScore = 0;
@@ -85,6 +86,7 @@ mainScreen.prototype = {
 		this.startRow = 0;
 		this.currentRow = 0;
 		this.currentCol = 0;
+		this.hasNotPlayed = true;
 		
 		this.timer;
 		
@@ -226,6 +228,15 @@ mainScreen.prototype = {
 		    this.isLow = true;
 		    game.sound.removeByKey("bgm");
 		    game.sound.play("low", .3, true, false);
+		}
+
+		if (this.score >= scoreLimit && this.hasNotPlayed) {
+		    if (this.isLow) {
+		        game.sound.removeByKey("low");
+		        game.sound.play("bgm", .5, true, false);
+		    }
+		    game.sound.play("target",.25);
+		    this.hasNotPlayed = false;
 		}
 		
 		if(this.moves <= 0)
@@ -402,10 +413,7 @@ mainScreen.prototype = {
 			}
 		}
 
-		if (this.score >= scoreLimit)
-		{
-		    //game.sound.play("target");
-		}
+
 
 		if (changed)
 		{
