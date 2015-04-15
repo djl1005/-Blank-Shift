@@ -42,7 +42,9 @@ var mainScreen = function(game){
 	this.uiShift = undefined;		//Pixels to shift the board down by
 
 	this.goodColor = null;      //favored level color
+	this.goodColorText = null;	//favored color text
 	this.badColor = null;       //unfavored level color
+	this.badColorText = null;	//unfavored color text
 }
 
 mainScreen.prototype = {
@@ -51,6 +53,7 @@ mainScreen.prototype = {
 	    game.load.image("rowGlow", "media/rowGlow.png");
 	    game.load.image("columnGlow", "media/columnGlow.png");
 	    game.load.image("redGlow", "media/redGlow.png");
+		game.load.image("bg", "media/endScreen.png");
 	},
 	
 	init: function(){
@@ -99,6 +102,9 @@ mainScreen.prototype = {
 		game.scale.setScreenSize();
 		game.stage.backgroundColor = '#8E669A';
 
+		//Load bg
+		this.background = game.add.sprite(0, 0, 'bg');
+		
 		this.newBoard(scoreLimit, moveLimit);
 		
 		//app.game.input.onDown.add(pickTile, this);
@@ -255,12 +261,59 @@ mainScreen.prototype = {
 	
 		//Set score and moves
 		this.score = 0;
-		this.scoreText = game.add.text(game.world.centerX + 10, 10, "Score : 0", {font: '25px Arial', fill: '#fff'});
+		this.scoreText = game.add.text(game.world.centerX - 45, 20, "Score : 0/" + scoreLimit, {font: '17px Arial', fill: '#fff'});
 		this.moves = moveLimit;
-		this.moveText = game.add.text(10, 10, "Moves :" + this.moves, { font: '25px Arial', fill: '#fff' });
+		this.moveText = game.add.text(10, 20, "Moves :" + this.moves, { font: '17px Arial', fill: '#fff' });
 
 	    //Set good and bad colors
 		this.setColors();
+		
+		//Set good color text
+		var goodCol = 'black';
+		if(this.goodColor == 0)
+			goodCol = '#66FFFF';
+		else if(this.goodColor == 1)
+			goodCol = '#FFFF66';
+		else if(this.goodColor == 2)
+			goodCol = '#0000FF';
+		else if(this.goodColor == 3)
+			goodCol = '#00FF00';
+		else if(this.goodColor == 4)
+			goodCol = '#FF3300';
+		else if(this.goodColor == 5)
+			goodCol = '#9900CC';
+		else if(this.goodColor == 6)
+			goodCol = '#FF9900';
+		else if(this.goodColor == 7)
+			goodCol = '#FF99FF';
+
+		this.goodColorText = game.add.text(240, 7, "Bonus", { font: '17px Arial', fill: goodCol});
+		this.goodColorText.stroke = 'black';
+		this.goodColorText.strokeThickness = 2;
+		
+		//Set bad color text
+		var badCol = 'black';
+		if(this.badColor == 0)
+			badCol = '#66FFFF';
+		else if(this.badColor == 1)
+			badCol = '#FFFF66';
+		else if(this.badColor == 2)
+			badCol = '#0000FF';
+		else if(this.badColor == 3)
+			badCol = '#00FF00';
+		else if(this.badColor == 4)
+			badCol = '#FF3300';
+		else if(this.badColor == 5)
+			badCol = '#9900CC';
+		else if(this.badColor == 6)
+			badCol = '#FF9900';
+		else if(this.badColor == 7)
+			badCol = '#FF99FF';
+
+		this.badColorText = game.add.text(240, 27, "Penalty", { font: '17px Arial', fill: badCol});
+		this.badColorText.stroke = 'black';
+		this.badColorText.strokeThickness = 2;
+		
 		
 		//Make sure there are no matches on spawn
 		this.doMatchCheck();
@@ -509,15 +562,15 @@ mainScreen.prototype = {
 
 		if (changed) {
 			this.doMatchCheck();
-			this.scoreText.setText("Score : " + this.score);
+			this.scoreText.setText("Score: " + this.score + "/" + scoreLimit);
 		} else {
 			game.input.onDown.add(this.startSwipe, this);
 		}
 	},
 
 	setColors: function() {
-	    this.goodColor = Math.floor(Math.random() * (this.tileTypes - 1));
-	    this.badColor = Math.floor(Math.random() * (this.tileTypes - 1));
+	    this.goodColor = Math.floor(Math.random() * (this.tileTypes - 2));
+	    this.badColor = Math.floor(Math.random() * (this.tileTypes - 2));
 
 	    if (this.goodColor == this.badColor) {
 	        this.setColors();
@@ -529,15 +582,22 @@ var menuScreen = function(game){}
 
 menuScreen.prototype = {
 	preload: function(){
-		//load magical play button
+		this.background = null;
+		
+	    game.load.image("play", "media/play.png");
+		game.load.image("bg", "media/bg.png");
 	},
 	
   	create: function(){
+		// show the game in full screen
+		game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+		game.scale.setScreenSize();
+		game.stage.backgroundColor = '#8E669A';
+		
+		this.background = game.add.sprite(0, 0, 'bg');
+		
 		var playButton = this.game.add.button(150,175,"play",this.playGame,this);
 		playButton.anchor.setTo(0.5,0.5);
-		
-		this.goalText = game.add.text(game.world.centerX, 50, "Level Goal : " + scoreLimit, {font: '25px Arial', fill: '#fff'});
-		this.goalText.anchor.setTo(0.5, 0);
 	},
 	
 	playGame: function(){
@@ -551,28 +611,36 @@ var endScreen = function(game){
 
 endScreen.prototype = {
 	preload: function(){
-		//load mystical replay button
+		
+	    game.load.image("next", "media/nextButton.png");
+	    game.load.image("restart", "media/restart.png");
+		game.load.image("bg", "media/endScreen.png");
 	},
 	
 	create: function(){
-		var restartButton = this.game.add.button(game.world.centerX, game.world.centerY, "replay", this.restart, this);
-		restartButton.anchor.setTo(0.5, 0.5);
+		// show the game in full screen
+		game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+		game.scale.setScreenSize();
+		game.stage.backgroundColor = '#8E669A';
+		
+		//Load bg
+		this.background = game.add.sprite(0, 0, 'bg');
 		
 		//Increment score goal and move limit
 		if(levelScore >= scoreLimit){
 			moveLimit += 2;
 			scoreLimit += 25;
+			var nextButton = this.game.add.button(game.world.centerX, game.world.centerY, "next", this.restart, this);
+			nextButton.anchor.setTo(0.5, 0.5);
+		}
+		else{
+			var restartButton = this.game.add.button(game.world.centerX, game.world.centerY, "restart", this.restart, this);
+			restartButton.anchor.setTo(0.5, 0.5);
 		}
 
-		this.replayText = game.add.text(game.world.centerX, game.world.centerY, "Restart Level", {font: '25px Arial', fill: '#fff'});
-		this.replayText.anchor.setTo(0.5, 0.5);
+		//Score 
 		this.scoreText = game.add.text(game.world.centerX, 10, "You scored : " + levelScore, {font: '25px Arial', fill: '#fff'});
 		this.scoreText.anchor.setTo(0.5, 0);
-		this.goalText = game.add.text(game.world.centerX, 50, "Level Goal : " + scoreLimit, {font: '25px Arial', fill: '#fff'});
-		this.goalText.anchor.setTo(0.5, 0);
-		if(levelScore >= scoreLimit){
-			this.replayText.setText("Next Level");
-		}
 	},
 	
 	restart: function(){
