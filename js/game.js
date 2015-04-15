@@ -4,7 +4,7 @@ var game = new Phaser.Game(300, 350, Phaser.CANVAS);
 var moveLimit = 15;
 var scoreLimit = 100;
 var levelScore;
-var totalScore;
+var totalScore = 0;
 var highScore;
 
 var mainScreen = function(game){
@@ -58,6 +58,13 @@ mainScreen.prototype = {
 	    game.load.image("bg", "media/endScreen.png");
 	    game.load.audio("bgm", "media/background.mp3");
 	    game.load.audio("low", "media/Hearbeat.mp3");
+
+	    if (JSON.parse(localStorage.getItem('highScore') === null)) {
+	        highScore = 0;
+	    }
+	    else {
+	        highScore = JSON.parse(localStorage.getItem('highScore'));
+	    }
 	},
 	
 	init: function(){
@@ -397,7 +404,7 @@ mainScreen.prototype = {
 
 		if (this.score >= scoreLimit)
 		{
-		    game.sound.play("target");
+		    //game.sound.play("target");
 		}
 
 		if (changed)
@@ -640,22 +647,44 @@ endScreen.prototype = {
 		if(levelScore >= scoreLimit){
 			moveLimit += 2;
 			scoreLimit += 25;
-			var nextButton = this.game.add.button(game.world.centerX, game.world.centerY, "next", this.restart, this);
+			var nextButton = this.game.add.button(game.world.centerX, game.world.centerY, "next", this.advance, this);
 			nextButton.anchor.setTo(0.5, 0.5);
 		}
 		else{
 			var restartButton = this.game.add.button(game.world.centerX, game.world.centerY, "restart", this.restart, this);
 			restartButton.anchor.setTo(0.5, 0.5);
+			if (totalScore > highScore){
+			    localStorage.setItem('highScore', JSON.stringify(totalScore));
+			    var text = game.add.text(game.world.centerX, 30, "New highscore", { font: '25px Arial', fill: '#fff' });
+			    text.anchor.setTo(0.5, 0);
+			    var highScoreText = game.add.text(game.world.centerX, 50, "Your highscore is: " + totalScore, { font: '25px Arial', fill: '#fff' });
+			    highScoreText.anchor.setTo(0.5, 0);
+			} else {
+			    var highScoreText = game.add.text(game.world.centerX, 30, "Your highscore is: " + highScore, { font: '25px Arial', fill: '#fff' });
+			    highScoreText.anchor.setTo(0.5, 0);
+			    var totalScoreText = game.add.text(game.world.centerX, 50, "Your total is: " + totalScore, { font: '25px Arial', fill: '#fff' });
+			    totalScoreText.anchor.setTo(0.5, 0);
+			}
+			
 		}
 
 		//Score 
-		this.scoreText = game.add.text(game.world.centerX, 10, "You scored : " + levelScore, {font: '25px Arial', fill: '#fff'});
+		this.scoreText = game.add.text(game.world.centerX, 10, "You scored: " + levelScore, {font: '25px Arial', fill: '#fff'});
 		this.scoreText.anchor.setTo(0.5, 0);
+	},
+
+	advance:function(){
+	    levelScore = 0;
+	    this.game.state.start('Main');
 	},
 	
 	restart: function(){
-		levelScore = 0;
-		this.game.state.start('Menu');
+	    levelScore = 0;
+	    moveLimit = 15;
+	    scoreLimit = 100;
+	    totalScore = 0;
+	    this.game.state.start('Menu');
+		if (totalScore > highScore) highScore = totalScore;
 	}
 }
 
