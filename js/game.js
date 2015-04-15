@@ -53,7 +53,9 @@ mainScreen.prototype = {
 	    game.load.image("rowGlow", "media/rowGlow.png");
 	    game.load.image("columnGlow", "media/columnGlow.png");
 	    game.load.image("redGlow", "media/redGlow.png");
-		game.load.image("bg", "media/endScreen.png");
+	    game.load.image("bg", "media/endScreen.png");
+	    game.load.audio("bgm", "media/background.mp3");
+	    game.load.audio("low", "media/Hearbeat.mp3");
 	},
 	
 	init: function(){
@@ -67,6 +69,7 @@ mainScreen.prototype = {
 		this.dragging = false;
 		this.isHorizontal = false;
 		this.isVertical = false;
+		this.isLow = false;
 		this.oldRow = 0;
 		this.oldCol = 0;
 		this.startCol = 0;
@@ -106,6 +109,8 @@ mainScreen.prototype = {
 		this.background = game.add.sprite(0, 0, 'bg');
 		
 		this.newBoard(scoreLimit, moveLimit);
+
+		game.sound.play("bgm", .75, true, false);
 		
 		//app.game.input.onDown.add(pickTile, this);
 		game.input.onDown.add(this.startSwipe, this);
@@ -206,9 +211,18 @@ mainScreen.prototype = {
 			    this.columnGlow.y = this.tileSize;
 			}
 		}
+
+		if (this.moves <= 5 && this.score < scoreLimit && !this.isLow)
+		{
+		    this.isLow = true;
+		    game.sound.removeByKey("bgm");
+		    game.sound.play("low", .3, true, false);
+		}
 		
 		if(this.moves <= 0)
 		{
+		    game.sound.removeByKey("bgm");
+		    game.sound.removeByKey("low");
 			levelScore = this.score;
 			game.state.start('GameOver');
 			console.log("Level Score: " + levelScore);
@@ -242,15 +256,6 @@ mainScreen.prototype = {
 				theTile.type = randomTile || 0;
 				theTile.LRactive = true;
 				theTile.TDactive = true;
-
-				/*
-				// here to test  sort
-				if (i == 0 || i == 1)
-				{
-					theTile.active = false;
-					theTile.frame = 5;
-				}
-				*/
 				
 				theTile.col = i;
 				theTile.anchor.setTo(0.5, 0.5);
@@ -325,7 +330,6 @@ mainScreen.prototype = {
 		var changed = false;
 		var localChange = false;
 
-		//console.log("boop");
 
 		for (var i = 0; i < this.fieldSize; i++) {
 			for (var j = 0; j < this.fieldSize; j++) {
@@ -388,6 +392,11 @@ mainScreen.prototype = {
 				}
 
 			}
+		}
+
+		if (this.score >= scoreLimit)
+		{
+		    game.sound.play("target");
 		}
 
 		if (changed)
