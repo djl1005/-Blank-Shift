@@ -454,69 +454,74 @@ mainScreen.prototype = {
 	},
 
 	startSwipe: function() {
-		//Set start coordinates
-		this.oldX = game.input.worldX;
-		this.oldY = game.input.worldY;
-
-		//Retrieve the picked column/row
-		this.oldRow = Math.floor((game.world.height - this.oldY) / this.tileSize);
-		this.oldCol = Math.floor((game.world.width - this.oldX) / this.tileSize);
-
-		this.startRow = this.oldRow;
-		this.startCol = this.oldCol;
-
-		this.dragging = true;
-
-		//Stop looking for onDown, begin looking for onUp
-		game.input.onDown.remove(this.startSwipe);
-		game.input.onUp.add(this.endSwipe, this);
+		if(game.input.worldY > this.tileSize){
+			//Set start coordinates
+			this.oldX = game.input.worldX;
+			this.oldY = game.input.worldY;
+	
+			//Retrieve the picked column/row
+			this.oldRow = Math.floor((game.world.height - this.oldY) / this.tileSize);
+			this.oldCol = Math.floor((game.world.width - this.oldX) / this.tileSize);
+	
+			this.startRow = this.oldRow;
+			this.startCol = this.oldCol;
+	
+			this.dragging = true;
+	
+			//Stop looking for onDown, begin looking for onUp
+			game.input.onDown.remove(this.startSwipe);
+			game.input.onUp.add(this.endSwipe, this);
+		}
 	},
 
 	endSwipe: function() {
-		//Check to see we did not end in the same place we started
-		if (!(this.startCol == this.oldCol && this.startRow == this.oldRow)) {
-			//Decrement moves and update text
-			this.moves--;
-			this.moveText.setText("Moves : " + this.moves);
+	
+		if(this.oldX > this.tileSize){
+			//Check to see we did not end in the same place we started
+			if (!(this.startCol == this.oldCol && this.startRow == this.oldRow)) {
+				//Decrement moves and update text
+				this.moves--;
+				this.moveText.setText("Moves : " + this.moves);
+				
+				this.doMatchCheck();
+			} else {
+				console.log("no movment");
+			}
+	
+			/*
+			//sort testing again
+			tileArray[app.startRow][app.startCol].active = false;
+			tileArray[app.startRow][app.startCol].frame = 5;
 			
-			this.doMatchCheck();
-		} else {
-			console.log("no movment");
+	
+			sort();
+			*/
+	
+			//reset swipe related values
+			this.oldX = 0;
+			this.oldY = 0;
+			this.currentX = 0;
+			this.currentY = 0;
+			this.dragging = false;
+			this.isHorizontal = false;
+			this.isVertical = false;
+			this.oldRow = 0;
+			this.oldCol = 0;
+			this.currentCol = 0;
+			this.currentRow = 0;
+	
+			//reset glow positions
+			this.redGlow.x = 500;
+			this.redGlow.y = 500;
+			this.rowGlow.x = 500;
+			this.rowGlow.y = 500;
+			this.columnGlow.x = 500;
+			this.columnGlow.y = 50;;
+	
+			//Stop looking for onUp, begin looking for onDown
+			
+			game.input.onUp.remove(this.endSwipe);
 		}
-
-		/*
-		//sort testing again
-		tileArray[app.startRow][app.startCol].active = false;
-		tileArray[app.startRow][app.startCol].frame = 5;
-		
-
-		sort();
-		*/
-
-		//reset swipe related values
-		this.oldX = 0;
-		this.oldY = 0;
-		this.currentX = 0;
-		this.currentY = 0;
-		this.dragging = false;
-		this.isHorizontal = false;
-		this.isVertical = false;
-		this.oldRow = 0;
-		this.oldCol = 0;
-		this.currentCol = 0;
-		this.currentRow = 0;
-
-        //reset glow positions
-		this.redGlow.x = 500;
-		this.redGlow.y = 500;
-		this.rowGlow.x = 500;
-		this.rowGlow.y = 500;
-		this.columnGlow.x = 500;
-		this.columnGlow.y = 50;;
-
-		//Stop looking for onUp, begin looking for onDown
-		
-		game.input.onUp.remove(this.endSwipe);
 	},
 
 	//when called loops though array and sorts it puting 
